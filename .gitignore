@@ -1,2 +1,5 @@
 /medev-tp4/nbproject/
 /medev-tp4/target/
+
+# Snyk Security Extension - AI Rules (auto-generated)
+.github/instructions/snyk_rules.instructions.md
