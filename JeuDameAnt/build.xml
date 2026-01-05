@@ -16,6 +16,12 @@
     <path id="test.classpath">
         <pathelement location="${classes.location}" />
         <pathelement location="${test.build.dir}" />
+
+        <fileset dir="${ant.home}/lib">
+            <include name="junit-*.jar" />
+            <include name="opentest4j*.jar" />
+            <include name="apiguardian*.jar" />
+        </fileset>
     </path>
 
     <target name="init">
@@ -62,21 +68,28 @@
         </javac>
     </target>
 
-    <target name="test" depends="compile-tests" description="Run Unit Tests with JaCoCo Coverage"
+    <target name="test" depends="compile-tests" description="Run Unit Tests with JaCoCo"
         xmlns:jacoco="antlib:org.jacoco.ant">
         <mkdir dir="${test.report.dir}" />
 
-        <jacoco:coverage destfile="${test.report.dir}/jacoco.exec">
-            <junitlauncher printsummary="true" haltOnFailure="true">
-                <classpath refid="test.classpath" />
-                <testclasses outputdir="${test.report.dir}">
-                    <fileset dir="${test.build.dir}">
-                        <include name="**/*Test.class" />
-                    </fileset>
-                    <listener type="legacy-plain" sendSysOut="true" />
-                </testclasses>
-            </junitlauncher>
-        </jacoco:coverage>
+        <jacoco:agent property="jacocoagent" destfile="${test.report.dir}/jacoco.exec" />
+
+        <junitlauncher printsummary="true">
+            <classpath refid="test.classpath" />
+
+            <testclasses outputdir="${test.report.dir}">
+                <fileset dir="${test.build.dir}">
+                    <include name="**/*Test.class" />
+                </fileset>
+
+                <fork>
+                    <jvmarg value="${jacocoagent}" />
+                </fork>
+
+                <listener type="legacy-plain" sendSysOut="true" />
+                <listener type="legacy-xml" />
+            </testclasses>
+        </junitlauncher>
 
         <jacoco:report>
             <executiondata>
@@ -99,6 +112,8 @@
         <exec executable="cmd" failonerror="true">
             <arg value="/c" />
             <arg value="sonar-scanner.bat" />
+
+            <arg value="-Dsonar.java.libraries=${ant.home}/lib/*.jar" />
         </exec>
     </target>
 
