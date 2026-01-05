@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="JeuDameAnt" default="build" basedir=".">
+    <description>Builds, tests, and runs the project JeuDameAnt without IDE dependencies.</description>
+
+    <taskdef uri="antlib:org.jacoco.ant" resource="org/jacoco/ant/antlib.xml">
+        <classpath path="${ant.home}/lib/jacocoant.jar" />
+    </taskdef>
+
+    <property name="src.location" location="src" />
+    <property name="classes.location" location="build/classes" />
+    <property name="test.src.dir" location="test" />
+    <property name="test.build.dir" location="build/test/classes" />
+    <property name="test.report.dir" location="build/test-results" />
+    <property name="lib.dir" location="lib" />
+
+    <path id="test.classpath">
+        <pathelement location="${classes.location}" />
+        <pathelement location="${test.build.dir}" />
+    </path>
+
+    <target name="init">
+        <mkdir dir="${classes.location}" />
+    </target>
+
+    <target name="checkDependencies" description="Check if source folder exists">
+        <condition property="src.available">
+            <available file="${src.location}" type="dir" />
+        </condition>
+    </target>
+
+    <target name="clean" description="Remove build and dist directories">
+        <delete dir="build" />
+        <delete dir="dist" />
+    </target>
+
+    <target name="build" depends="init, checkDependencies" if="src.available"
+        description="Compile Java sources">
+        <echo message="Building application..." />
+        <javac srcdir="${src.location}" destdir="${classes.location}" includeAntRuntime="false" />
+        <echo message="Done!" />
+    </target>
+
+    <target name="jar" depends="build" description="Generate the JAR file">
+        <mkdir dir="dist" />
+        <jar destfile="dist/JeuDameAnt.jar" basedir="${classes.location}">
+            <manifest>
+                <attribute name="Main-Class" value="jeudameant.Game" />
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="javadoc" description="Generate project Javadoc">
+        <mkdir dir="dist/javadoc" />
+        <javadoc sourcepath="${src.location}" destdir="dist/javadoc">
+        </javadoc>
+    </target>
+
+    <target name="compile-tests" depends="build">
+        <mkdir dir="${test.build.dir}" />
+        <javac srcdir="${test.src.dir}" destdir="${test.build.dir}" includeantruntime="true">
+            <classpath refid="test.classpath" />
+        </javac>
+    </target>
+
+    <target name="test" depends="compile-tests" description="Run Unit Tests with JaCoCo Coverage"
+        xmlns:jacoco="antlib:org.jacoco.ant">
+        <mkdir dir="${test.report.dir}" />
+
+        <jacoco:coverage destfile="${test.report.dir}/jacoco.exec">
+            <junitlauncher printsummary="true" haltOnFailure="true">
+                <classpath refid="test.classpath" />
+                <testclasses outputdir="${test.report.dir}">
+                    <fileset dir="${test.build.dir}">
+                        <include name="**/*Test.class" />
+                    </fileset>
+                    <listener type="legacy-plain" sendSysOut="true" />
+                </testclasses>
+            </junitlauncher>
+        </jacoco:coverage>
+
+        <jacoco:report>
+            <executiondata>
+                <file file="${test.report.dir}/jacoco.exec" />
+            </executiondata>
+            <structure name="JeuDameAnt Project">
+                <classfiles>
+                    <fileset dir="${classes.location}" />
+                </classfiles>
+                <sourcefiles encoding="UTF-8">
+                    <fileset dir="${src.location}" />
+                </sourcefiles>
+            </structure>
+            <xml destfile="${test.report.dir}/jacoco.xml" />
+        </jacoco:report>
+    </target>
+
+    <target name="sonar" description="Run SonarQube analysis via sonar-scanner">
+        <echo message="Starting SonarCloud analysis..." />
+        <exec executable="cmd" failonerror="true">
+            <arg value="/c" />
+            <arg value="sonar-scanner.bat" />
+        </exec>
+    </target>
+
+</project>
