@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Board.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JeuDameAnt Project</a> &gt; <a href="index.source.html" class="el_package">jeudameant</a> &gt; <span class="el_source">Board.java</span></div><h1>Board.java</h1><pre class="source lang-java linenums">package jeudameant;
+
+import java.io.Serializable;
+
+public class Board implements Serializable {
+
+    private final Piece[][] board;
+<span class="fc" id="L8">    private final int size = 10;</span>
+
+<span class="fc" id="L10">    public Board() {</span>
+<span class="fc" id="L11">        board = new Piece[size][size];</span>
+<span class="fc" id="L12">        setup();</span>
+<span class="fc" id="L13">    }</span>
+
+    public void setup() {
+        // Clear the board
+<span class="fc bfc" id="L17" title="All 2 branches covered.">        for (int row = 0; row &lt; size; row++) {</span>
+<span class="fc bfc" id="L18" title="All 2 branches covered.">            for (int col = 0; col &lt; size; col++) {</span>
+<span class="fc" id="L19">                board[row][col] = null;</span>
+            }
+        }
+
+        // Place black pieces
+<span class="fc bfc" id="L24" title="All 2 branches covered.">        for (int row = 0; row &lt; 4; row++) {</span>
+<span class="fc bfc" id="L25" title="All 2 branches covered.">            for (int col = 0; col &lt; size; col++) {</span>
+<span class="fc bfc" id="L26" title="All 2 branches covered.">                if ((row + col) % 2 != 0) {</span>
+<span class="fc" id="L27">                    board[row][col] = new Piece(Color.BLACK);</span>
+                }
+            }
+        }
+
+        // Place white pieces
+<span class="fc bfc" id="L33" title="All 2 branches covered.">        for (int row = size - 4; row &lt; size; row++) {</span>
+<span class="fc bfc" id="L34" title="All 2 branches covered.">            for (int col = 0; col &lt; size; col++) {</span>
+<span class="fc bfc" id="L35" title="All 2 branches covered.">                if ((row + col) % 2 != 0) {</span>
+<span class="fc" id="L36">                    board[row][col] = new Piece(Color.WHITE);</span>
+                }
+            }
+        }
+<span class="fc" id="L40">    }</span>
+
+    public Piece getPiece(int row, int col) {
+<span class="fc" id="L43">        return board[row][col];</span>
+    }
+
+    public void movePiece(int fromRow, int fromCol, int toRow, int toCol) {
+<span class="fc" id="L47">        Piece piece = getPiece(fromRow, fromCol);</span>
+<span class="fc" id="L48">        board[fromRow][fromCol] = null;</span>
+<span class="fc" id="L49">        board[toRow][toCol] = piece;</span>
+<span class="fc" id="L50">    }</span>
+
+    public void removePiece(int row, int col) {
+<span class="fc" id="L53">        board[row][col] = null;</span>
+<span class="fc" id="L54">    }</span>
+
+    public void display() {
+<span class="nc" id="L57">        System.out.print(&quot;  &quot;);</span>
+<span class="nc bnc" id="L58" title="All 2 branches missed.">        for (int i = 0; i &lt; size; i++) {</span>
+<span class="nc" id="L59">            System.out.print(i + &quot; &quot;);</span>
+        }
+<span class="nc" id="L61">        System.out.println();</span>
+
+<span class="nc bnc" id="L63" title="All 2 branches missed.">        for (int row = 0; row &lt; size; row++) {</span>
+<span class="nc" id="L64">            System.out.print(row + &quot; &quot;);</span>
+<span class="nc bnc" id="L65" title="All 2 branches missed.">            for (int col = 0; col &lt; size; col++) {</span>
+<span class="nc bnc" id="L66" title="All 2 branches missed.">                if (board[row][col] != null) {</span>
+<span class="nc" id="L67">                    System.out.print(board[row][col] + &quot; &quot;);</span>
+                } else {
+<span class="nc" id="L69">                    System.out.print(&quot;. &quot;);</span>
+                }
+            }
+<span class="nc" id="L72">            System.out.println();</span>
+        }
+<span class="nc" id="L74">    }</span>
+    
+    public int getSize() {
+<span class="nc" id="L77">        return this.size;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

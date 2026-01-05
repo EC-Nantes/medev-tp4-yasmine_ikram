@@ -42,7 +42,10 @@
     <target name="build" depends="init, checkDependencies" if="src.available"
         description="Compile Java sources">
         <echo message="Building application..." />
-        <javac srcdir="${src.location}" destdir="${classes.location}" includeAntRuntime="false" />
+        <javac srcdir="${src.location}" destdir="${classes.location}"
+            includeAntRuntime="false"
+            debug="true"
+            debuglevel="lines,vars,source" />
         <echo message="Done!" />
     </target>
 
@@ -63,7 +66,10 @@
 
     <target name="compile-tests" depends="build">
         <mkdir dir="${test.build.dir}" />
-        <javac srcdir="${test.src.dir}" destdir="${test.build.dir}" includeantruntime="true">
+        <javac srcdir="${test.src.dir}" destdir="${test.build.dir}"
+            includeantruntime="true"
+            debug="true"
+            debuglevel="lines,vars,source">
             <classpath refid="test.classpath" />
         </javac>
     </target>
@@ -95,6 +101,7 @@
             <executiondata>
                 <file file="${test.report.dir}/jacoco.exec" />
             </executiondata>
+
             <structure name="JeuDameAnt Project">
                 <classfiles>
                     <fileset dir="${classes.location}" />
@@ -103,7 +110,10 @@
                     <fileset dir="${src.location}" />
                 </sourcefiles>
             </structure>
+
             <xml destfile="${test.report.dir}/jacoco.xml" />
+
+            <html destdir="${test.report.dir}/coverage-html" />
         </jacoco:report>
     </target>
 

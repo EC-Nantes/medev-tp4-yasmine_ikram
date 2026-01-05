@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Game.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">JeuDameAnt Project</a> &gt; <a href="index.source.html" class="el_package">jeudameant</a> &gt; <span class="el_source">Game.java</span></div><h1>Game.java</h1><pre class="source lang-java linenums">/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package jeudameant;
+
+/**
+ *
+ * @author user
+ */
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+
+public class Game implements Serializable {
+
+    private Board board;
+    private Player player1;
+    private Player player2;
+    private Player currentPlayer;
+<span class="fc" id="L27">    boolean running =true ;</span>
+
+<span class="fc" id="L29">    public Game() {</span>
+<span class="fc" id="L30">        board = new Board();</span>
+<span class="fc" id="L31">        player1 = new Player(Color.WHITE);</span>
+<span class="fc" id="L32">        player2 = new Player(Color.BLACK);</span>
+<span class="fc" id="L33">        currentPlayer = player1;</span>
+<span class="fc" id="L34">    }</span>
+
+    public void start() {
+<span class="nc" id="L37">        Scanner scanner = new Scanner(System.in);</span>
+<span class="nc bnc" id="L38" title="All 2 branches missed.">        while (running) {</span>
+<span class="nc" id="L39">            board.display();</span>
+<span class="nc" id="L40">            System.out.println(&quot;Current player: &quot; + currentPlayer.getColor());</span>
+            
+<span class="nc" id="L42">            List&lt;Move&gt; captures = getPossibleCaptures();</span>
+<span class="nc bnc" id="L43" title="All 2 branches missed.">            if (!captures.isEmpty()) {</span>
+<span class="nc" id="L44">                System.out.println(&quot;Capture is mandatory!&quot;);</span>
+            }
+            
+<span class="nc" id="L47">            System.out.println(&quot;Enter your move (fromRow fromCol toRow toCol), 'save' to save, 'load' to load , or 'quit' to quit:&quot;);</span>
+<span class="nc" id="L48">            String input = scanner.nextLine();</span>
+
+<span class="nc bnc" id="L50" title="All 2 branches missed.">            if (input.equalsIgnoreCase(&quot;save&quot;)) {</span>
+<span class="nc" id="L51">                saveGame(&quot;dame.txt&quot;);</span>
+<span class="nc" id="L52">                continue;</span>
+<span class="nc bnc" id="L53" title="All 2 branches missed.">            } else if (input.equalsIgnoreCase(&quot;load&quot;)) {</span>
+<span class="nc" id="L54">                loadGame(&quot;dame.txt&quot;);</span>
+<span class="nc" id="L55">                continue;</span>
+<span class="nc bnc" id="L56" title="All 2 branches missed.">            } else if (input.equalsIgnoreCase(&quot;quit&quot;)){</span>
+<span class="nc" id="L57">                System.out.println(&quot;Game ended&quot;);</span>
+<span class="nc" id="L58">                running = false ;</span>
+<span class="nc" id="L59">                continue;</span>
+            }
+
+            try {
+<span class="nc" id="L63">                String[] parts = input.split(&quot; &quot;);</span>
+<span class="nc" id="L64">                int fromRow = Integer.parseInt(parts[0]);</span>
+<span class="nc" id="L65">                int fromCol = Integer.parseInt(parts[1]);</span>
+<span class="nc" id="L66">                int toRow = Integer.parseInt(parts[2]);</span>
+<span class="nc" id="L67">                int toCol = Integer.parseInt(parts[3]);</span>
+
+<span class="nc" id="L69">                Move move = new Move(fromRow, fromCol, toRow, toCol);</span>
+<span class="nc bnc" id="L70" title="All 2 branches missed.">                if (isValidMove(move)) {</span>
+                    
+<span class="nc bnc" id="L72" title="All 2 branches missed.">                    boolean isCapture = Math.abs(move.getFromRow() - move.getToRow()) == 2;</span>
+
+<span class="nc" id="L74">                    board.movePiece(move.getFromRow(), move.getFromCol(), move.getToRow(), move.getToCol());</span>
+                    
+<span class="nc bnc" id="L76" title="All 2 branches missed.">                    if (isCapture) {</span>
+<span class="nc" id="L77">                        int capturedRow = (move.getFromRow() + move.getToRow()) / 2;</span>
+<span class="nc" id="L78">                        int capturedCol = (move.getFromCol() + move.getToCol()) / 2;</span>
+<span class="nc" id="L79">                        board.removePiece(capturedRow, capturedCol);</span>
+                    }
+                    
+<span class="nc" id="L82">                    promotePawn(move.getToRow(), move.getToCol());</span>
+                    
+<span class="nc bnc" id="L84" title="All 2 branches missed.">                    if (isCapture) {</span>
+<span class="nc" id="L85">                        List&lt;Move&gt; nextCaptures = getPossibleCaptures(move.getToRow(), move.getToCol());</span>
+<span class="nc bnc" id="L86" title="All 2 branches missed.">                        if (!nextCaptures.isEmpty()) {</span>
+                            // Don't switch player, let them play again
+<span class="nc" id="L88">                            continue;</span>
+                        }
+                    }
+
+<span class="nc" id="L92">                    switchPlayer();</span>
+<span class="nc" id="L93">                } else {</span>
+<span class="nc" id="L94">                    System.out.println(&quot;Invalid move. Try again.&quot;);</span>
+                }
+<span class="nc" id="L96">            } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {</span>
+<span class="nc" id="L97">                System.out.println(&quot;Invalid input. Please use the format 'fromRow fromCol toRow toCol'.&quot;);</span>
+<span class="nc" id="L98">            }</span>
+<span class="nc" id="L99">        }</span>
+<span class="nc" id="L100">    }</span>
+
+    private boolean isValidMove(Move move) {
+<span class="nc" id="L103">        List&lt;Move&gt; possibleMoves = getPossibleMoves(move.getFromRow(), move.getFromCol());</span>
+<span class="nc bnc" id="L104" title="All 2 branches missed.">        for (Move possibleMove : possibleMoves) {</span>
+<span class="nc bnc" id="L105" title="All 4 branches missed.">            if (possibleMove.getToRow() == move.getToRow() &amp;&amp; possibleMove.getToCol() == move.getToCol()) {</span>
+<span class="nc" id="L106">                return true;</span>
+            }
+<span class="nc" id="L108">        }</span>
+<span class="nc" id="L109">        return false;</span>
+    }
+    
+    private List&lt;Move&gt; getPossibleMoves(int row, int col) {
+<span class="nc" id="L113">        List&lt;Move&gt; captures = getPossibleCaptures(row, col);</span>
+<span class="nc bnc" id="L114" title="All 2 branches missed.">        if (!captures.isEmpty()) {</span>
+<span class="nc" id="L115">            return captures;</span>
+        }
+
+<span class="nc" id="L118">        List&lt;Move&gt; moves = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L119">        Piece piece = board.getPiece(row, col);</span>
+<span class="nc bnc" id="L120" title="All 4 branches missed.">        if (piece == null || piece.getColor() != currentPlayer.getColor()) {</span>
+<span class="nc" id="L121">            return moves;</span>
+        }
+
+<span class="nc bnc" id="L124" title="All 2 branches missed.">        if (piece.isQueen()) {</span>
+            // Queen moves
+<span class="nc" id="L126">            int[] directions = {-1, 1};</span>
+<span class="nc bnc" id="L127" title="All 2 branches missed.">            for (int dRow : directions) {</span>
+<span class="nc bnc" id="L128" title="All 2 branches missed.">                for (int dCol : directions) {</span>
+<span class="nc bnc" id="L129" title="All 2 branches missed.">                    for (int i = 1; i &lt; board.getSize(); i++) {</span>
+<span class="nc" id="L130">                        int newRow = row + i * dRow;</span>
+<span class="nc" id="L131">                        int newCol = col + i * dCol;</span>
+<span class="nc bnc" id="L132" title="All 8 branches missed.">                        if (newRow &lt; 0 || newRow &gt;= board.getSize() || newCol &lt; 0 || newCol &gt;= board.getSize()) {</span>
+<span class="nc" id="L133">                            break;</span>
+                        }
+<span class="nc bnc" id="L135" title="All 2 branches missed.">                        if (board.getPiece(newRow, newCol) == null) {</span>
+<span class="nc" id="L136">                            moves.add(new Move(row, col, newRow, newCol));</span>
+                        } else {
+                            break;
+                        }
+                    }
+                }
+            }
+<span class="nc" id="L143">        } else {</span>
+            // Pawn moves
+<span class="nc bnc" id="L145" title="All 2 branches missed.">            int direction = (piece.getColor() == Color.WHITE) ? -1 : 1;</span>
+<span class="nc" id="L146">            int[] dCols = {-1, 1};</span>
+
+            // Regular moves
+<span class="nc bnc" id="L149" title="All 2 branches missed.">            for (int dCol : dCols) {</span>
+<span class="nc" id="L150">                int newRow = row + direction;</span>
+<span class="nc" id="L151">                int newCol = col + dCol;</span>
+<span class="nc bnc" id="L152" title="All 10 branches missed.">                if (newRow &gt;= 0 &amp;&amp; newRow &lt; board.getSize() &amp;&amp; newCol &gt;= 0 &amp;&amp; newCol &lt; board.getSize() &amp;&amp; board.getPiece(newRow, newCol) == null) {</span>
+<span class="nc" id="L153">                    moves.add(new Move(row, col, newRow, newCol));</span>
+                }
+            }
+        }
+<span class="nc" id="L157">        return moves;</span>
+    }
+    
+    private List&lt;Move&gt; getPossibleCaptures() {
+<span class="nc" id="L161">        List&lt;Move&gt; captures = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L162" title="All 2 branches missed.">        for (int row = 0; row &lt; board.getSize(); row++) {</span>
+<span class="nc bnc" id="L163" title="All 2 branches missed.">            for (int col = 0; col &lt; board.getSize(); col++) {</span>
+<span class="nc" id="L164">                captures.addAll(getPossibleCaptures(row, col));</span>
+            }
+        }
+<span class="nc" id="L167">        return captures;</span>
+    }
+
+    
+    private List&lt;Move&gt; getPossibleCaptures(int row, int col) {
+<span class="nc" id="L172">        List&lt;Move&gt; captures = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L173">        Piece piece = board.getPiece(row, col);</span>
+<span class="nc bnc" id="L174" title="All 4 branches missed.">        if (piece == null || piece.getColor() != currentPlayer.getColor()) {</span>
+<span class="nc" id="L175">            return captures;</span>
+        }
+
+<span class="nc bnc" id="L178" title="All 2 branches missed.">        if (piece.isQueen()) {</span>
+            // Queen captures
+<span class="nc" id="L180">            int[] directions = {-1, 1};</span>
+<span class="nc bnc" id="L181" title="All 2 branches missed.">            for (int dRow : directions) {</span>
+<span class="nc bnc" id="L182" title="All 2 branches missed.">                for (int dCol : directions) {</span>
+<span class="nc bnc" id="L183" title="All 2 branches missed.">                    for (int i = 1; i &lt; board.getSize(); i++) {</span>
+<span class="nc" id="L184">                        int newRow = row + i * dRow;</span>
+<span class="nc" id="L185">                        int newCol = col + i * dCol;</span>
+<span class="nc bnc" id="L186" title="All 8 branches missed.">                        if (newRow &lt; 0 || newRow &gt;= board.getSize() || newCol &lt; 0 || newCol &gt;= board.getSize()) {</span>
+<span class="nc" id="L187">                            break;</span>
+                        }
+<span class="nc bnc" id="L189" title="All 2 branches missed.">                        if (board.getPiece(newRow, newCol) != null) {</span>
+<span class="nc bnc" id="L190" title="All 2 branches missed.">                            if (board.getPiece(newRow, newCol).getColor() != currentPlayer.getColor()) {</span>
+<span class="nc" id="L191">                                int jumpRow = newRow + dRow;</span>
+<span class="nc" id="L192">                                int jumpCol = newCol + dCol;</span>
+<span class="nc bnc" id="L193" title="All 10 branches missed.">                                if (jumpRow &gt;= 0 &amp;&amp; jumpRow &lt; board.getSize() &amp;&amp; jumpCol &gt;= 0 &amp;&amp; jumpCol &lt; board.getSize() &amp;&amp; board.getPiece(jumpRow, jumpCol) == null) {</span>
+<span class="nc" id="L194">                                    captures.add(new Move(row, col, jumpRow, jumpCol));</span>
+                                }
+<span class="nc" id="L196">                            }</span>
+                            break;
+                        }
+                    }
+                }
+            }
+<span class="nc" id="L202">        } else {</span>
+            // Pawn captures
+<span class="nc bnc" id="L204" title="All 2 branches missed.">            int direction = (piece.getColor() == Color.WHITE) ? -1 : 1;</span>
+<span class="nc" id="L205">            int[] dCols = {-1, 1};</span>
+
+<span class="nc bnc" id="L207" title="All 2 branches missed.">            for (int dCol : dCols) {</span>
+<span class="nc" id="L208">                int newRow = row + 2 * direction;</span>
+<span class="nc" id="L209">                int newCol = col + 2 * dCol;</span>
+<span class="nc" id="L210">                int capturedRow = row + direction;</span>
+<span class="nc" id="L211">                int capturedCol = col + dCol;</span>
+<span class="nc bnc" id="L212" title="All 8 branches missed.">                if (newRow &gt;= 0 &amp;&amp; newRow &lt; board.getSize() &amp;&amp; newCol &gt;= 0 &amp;&amp; newCol &lt; board.getSize() &amp;&amp;</span>
+<span class="nc bnc" id="L213" title="All 2 branches missed.">                    board.getPiece(newRow, newCol) == null &amp;&amp;</span>
+<span class="nc bnc" id="L214" title="All 2 branches missed.">                    board.getPiece(capturedRow, capturedCol) != null &amp;&amp;</span>
+<span class="nc bnc" id="L215" title="All 2 branches missed.">                    board.getPiece(capturedRow, capturedCol).getColor() != currentPlayer.getColor()) {</span>
+<span class="nc" id="L216">                    captures.add(new Move(row, col, newRow, newCol));</span>
+                }
+            }
+        }
+<span class="nc" id="L220">        return captures;</span>
+    }
+
+
+    private void promotePawn(int row, int col) {
+<span class="nc" id="L225">        Piece piece = board.getPiece(row, col);</span>
+<span class="nc bnc" id="L226" title="All 4 branches missed.">        if (piece != null &amp;&amp; !piece.isQueen()) {</span>
+<span class="nc bnc" id="L227" title="All 4 branches missed.">            if (piece.getColor() == Color.WHITE &amp;&amp; row == 0) {</span>
+<span class="nc" id="L228">                piece.promote();</span>
+<span class="nc bnc" id="L229" title="All 4 branches missed.">            } else if (piece.getColor() == Color.BLACK &amp;&amp; row == board.getSize() - 1) {</span>
+<span class="nc" id="L230">                piece.promote();</span>
+            }
+        }
+<span class="nc" id="L233">    }</span>
+
+
+    private void switchPlayer() {
+<span class="nc bnc" id="L237" title="All 2 branches missed.">        currentPlayer = (currentPlayer == player1) ? player2 : player1;</span>
+<span class="nc" id="L238">    }</span>
+
+    void saveGame(String filename) {
+<span class="fc" id="L241">        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filename))) {</span>
+<span class="fc" id="L242">            oos.writeObject(this);</span>
+<span class="fc" id="L243">            System.out.println(&quot;Game saved successfully.&quot;);</span>
+<span class="nc" id="L244">        } catch (IOException e) {</span>
+<span class="nc" id="L245">            System.out.println(&quot;Error saving game: &quot; + e.getMessage());</span>
+<span class="fc" id="L246">        }</span>
+<span class="fc" id="L247">    }</span>
+
+    void loadGame(String filename) {
+<span class="fc" id="L250">        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(filename))) {</span>
+<span class="fc" id="L251">            Game loadedGame = (Game) ois.readObject();</span>
+<span class="fc" id="L252">            this.board = loadedGame.board;</span>
+<span class="fc" id="L253">            this.player1 = loadedGame.player1;</span>
+<span class="fc" id="L254">            this.player2 = loadedGame.player2;</span>
+<span class="fc" id="L255">            this.currentPlayer = loadedGame.currentPlayer;</span>
+<span class="fc" id="L256">            System.out.println(&quot;Game loaded successfully.&quot;);</span>
+<span class="nc" id="L257">        } catch (IOException | ClassNotFoundException e) {</span>
+<span class="nc" id="L258">            System.out.println(&quot;Error loading game: &quot; + e.getMessage());</span>
+<span class="fc" id="L259">        }</span>
+<span class="fc" id="L260">    }</span>
+
+
+    public static void main(String[] args) {
+<span class="nc" id="L264">        Game game = new Game();</span>
+<span class="nc" id="L265">        game.start();</span>
+<span class="nc" id="L266">    }</span>
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>
